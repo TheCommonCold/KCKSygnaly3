@@ -11,19 +11,19 @@ fig = plt.figure(figsize=(15, 15), dpi=80)
 
 
 def sprawdzacz(signalData,w):
-    low=200
+    low=180
     high=3000
     if (len(signalData.shape) > 1):
         signalData = [s[0] for s in signalData]
 
     signal = []
-    for i in range(1 * w, 3 * w):
-        signal.append(signalData[i])
-
+    if w*3<len(signalData):
+        for i in range(w*1, w*3):
+            signal.append(signalData[i])
+    else:
+        signal=signalData
     signalfft = fft(signal)
     signalfft = abs(signalfft)
-    signalfft = [x / (len(signal) / 2) for x in signalfft]
-    signalfft[0] = signalfft[0] / 2
 
     signal = []
     freqs = range(low, high)
@@ -42,29 +42,39 @@ def sprawdzacz(signalData,w):
         if wynik[i] < 1:
             wynik[i] = 0
 
-    # ax = fig.add_subplot(211)
-    # ax.stem(freqs, wynik, '-')
-    # plt.yscale('log')
-    # ax = fig.add_subplot(212)
-    # ax.stem(freqs, signal, '-')
-    # plt.yscale('log')
-    # plt.show()
-    # print(freqs[argmax(wynik)])
-    if freqs[argmax(wynik)] > 300:
+    #ax = fig.add_subplot(211)
+    #ax.stem(freqs, wynik, '-')
+    #plt.yscale('log')
+    #ax = fig.add_subplot(212)
+    #ax.stem(freqs, signal, '-')
+    #plt.yscale('log')
+    #plt.show()
+    #print(freqs[argmax(wynik)])
+    if freqs[argmax(wynik)] > 320:
         return("K")
     else:
         return("M")
 
-listaPlikow = glob.glob("./trainall/*.wav")
-listaPoprawnych = []
-for i in range(len(listaPlikow)):
-    listaPlikow[i]=listaPlikow[i][2:]
-    listaPlikow[i]=listaPlikow[i].replace('\\','/')
-    listaPoprawnych.append(listaPlikow[i][-5])
+def checkall():
+    listaPlikow = glob.glob("./trainall/*.wav")
+    listaPoprawnych = []
+    for i in range(len(listaPlikow)):
+        listaPlikow[i] = listaPlikow[i][2:]
+        listaPlikow[i] = listaPlikow[i].replace('\\', '/')
+        listaPoprawnych.append(listaPlikow[i][-5])
 
-for i in range(1,len(listaPlikow)):
-    w, signalData = scipy.io.wavfile.read(listaPlikow[i])
-    if sprawdzacz(signalData,w)==listaPoprawnych[i]:
-        print("good")
-    else:
-        print("bad")
+    wygranko = 0
+    przegranko = 0
+    for i in range(1, len(listaPlikow)):
+        w, signalData = scipy.io.wavfile.read(listaPlikow[i])
+        if sprawdzacz(signalData, w) == listaPoprawnych[i]:
+            print("good")
+            wygranko=wygranko+1
+        else:
+            print("bad")
+            przegranko=przegranko+1
+    print("wygranka ",wygranko, "przegranka", przegranko)
+
+#w, signalData = scipy.io.wavfile.read("trainall/010_M.wav")
+#sprawdzacz(signalData, w);
+checkall()
