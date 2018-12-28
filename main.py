@@ -11,22 +11,24 @@ fig = plt.figure(figsize=(15, 15), dpi=80)
 
 
 def sprawdzacz(signalData,w):
-    low=180
-    high=3000
+    low=150
+    high=6000
     if (len(signalData.shape) > 1):
         signalData = [s[0] for s in signalData]
 
     signal = []
     if w*3<len(signalData):
-        for i in range(w*1, w*3):
+        for i in range(int(w*1), w*3):
             signal.append(signalData[i])
     else:
         signal=signalData
+        #for i in range(w*1, len(signalData)):
+        #    signal.append(signalData[i])
     signalfft = fft(signal)
     signalfft = abs(signalfft)
 
     signal = []
-    freqs = range(low, high)
+    freqs = range(0, int(len(signalfft)/2))
     for i in freqs:
         signal.append(signalfft[i])
 
@@ -36,7 +38,8 @@ def sprawdzacz(signalData,w):
     for i in range(1, 8):
         output.append(scipy.signal.decimate(signal, i))
         for j in range(len(output[i])):
-            wynik[j] = wynik[j] * output[i][j]
+            if j>low and j<high:
+                wynik[j] = wynik[j] * output[i][j]
 
     for i in range(len(wynik)):
         if wynik[i] < 1:
@@ -49,8 +52,8 @@ def sprawdzacz(signalData,w):
     #ax.stem(freqs, signal, '-')
     #plt.yscale('log')
     #plt.show()
-    #print(freqs[argmax(wynik)])
-    if freqs[argmax(wynik)] > 320:
+    print(freqs[argmax(wynik)])
+    if freqs[argmax(wynik)] > 350:
         return("K")
     else:
         return("M")
@@ -67,12 +70,12 @@ def checkall():
     przegranko = 0
     for i in range(1, len(listaPlikow)):
         w, signalData = scipy.io.wavfile.read(listaPlikow[i])
-        if sprawdzacz(signalData, w) == listaPoprawnych[i]:
-            print("good")
+        wynik=sprawdzacz(signalData, w)
+        if wynik == listaPoprawnych[i]:
             wygranko=wygranko+1
         else:
-            print("bad")
             przegranko=przegranko+1
+        print(wynik, listaPoprawnych[i])
     print("wygranka ",wygranko, "przegranka", przegranko)
 
 #w, signalData = scipy.io.wavfile.read("trainall/010_M.wav")
